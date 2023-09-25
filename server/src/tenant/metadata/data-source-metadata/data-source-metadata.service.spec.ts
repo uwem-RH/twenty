@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { PrismaService } from 'src/database/prisma.service';
 
 import { DataSourceMetadataService } from './data-source-metadata.service';
-import { DataSourceMetadata } from './data-source-metadata.entity';
 
 describe('DataSourceMetadataService', () => {
   let service: DataSourceMetadataService;
@@ -12,7 +12,7 @@ describe('DataSourceMetadataService', () => {
       providers: [
         DataSourceMetadataService,
         {
-          provide: getRepositoryToken(DataSourceMetadata, 'metadata'),
+          provide: PrismaService,
           useValue: {},
         },
       ],

@@ -1,11 +1,13 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "binary"
+  provider        = "prisma-client-js"
+  engineType      = "binary"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("PG_DATABASE_URL")
+  schemas  = ["public", "metadata"]
 }
 
 generator nestgraphql {
@@ -61,6 +63,10 @@ generator nestgraphql {
   decorate_classTransformer_arguments = "['() => {propertyType.0}']"
   decorate_classTransformer_name      = Type
 }
+
+// --------------------------------------
+// PUBLIC SCHEMA
+// --------------------------------------
 
 model User {
   /// @Validator.IsString()
@@ -122,12 +128,15 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+  @@schema("public")
 }
 
 enum ColorScheme {
   Light
   Dark
   System
+
+  @@schema("public")
 }
 
 model UserSettings {
@@ -145,6 +154,7 @@ model UserSettings {
   updatedAt DateTime @updatedAt
 
   @@map("user_settings")
+  @@schema("public")
 }
 
 /// @TypeGraphQL.omit(input: true)
@@ -165,28 +175,32 @@ model Workspace {
   /// @Validator.IsOptional()
   inviteHash  String?
 
-  workspaceMember    WorkspaceMember[]
-  companies          Company[]
-  people             Person[]
-  activities         Activity[]
-  comments           Comment[]
-  pipelines          Pipeline[]
-  pipelineStages     PipelineStage[]
-  pipelineProgresses PipelineProgress[]
-  activityTargets    ActivityTarget[]
-  viewFields         ViewField[]
-  viewFilters        ViewFilter[]
-  views              View[]
-  viewSorts          ViewSort[]
+  workspaceMember     WorkspaceMember[]
+  companies           Company[]
+  people              Person[]
+  activities          Activity[]
+  comments            Comment[]
+  pipelines           Pipeline[]
+  pipelineStages      PipelineStage[]
+  pipelineProgresses  PipelineProgress[]
+  activityTargets     ActivityTarget[]
+  viewFields          ViewField[]
+  viewFilters         ViewFilter[]
+  views               View[]
+  viewSorts           ViewSort[]
+  attachments         Attachment[]
+  dataSourcesMetadata DataSourceMetadata[]
 
   /// @TypeGraphQL.omit(input: true, output: true)
   deletedAt DateTime?
 
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  Attachment Attachment[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  FieldMetadata  FieldMetadata[]
+  ObjectMetadata ObjectMetadata[]
 
   @@map("workspaces")
+  @@schema("public")
 }
 
 model WorkspaceMember {
@@ -221,6 +235,7 @@ model WorkspaceMember {
   comments  Comment[]
 
   @@map("workspace_members")
+  @@schema("public")
 }
 
 model Company {
@@ -272,6 +287,7 @@ model Company {
   Favorite         Favorite[]
 
   @@map("companies")
+  @@schema("public")
 }
 
 model Person {
@@ -324,6 +340,7 @@ model Person {
   Favorite         Favorite[]
 
   @@map("people")
+  @@schema("public")
 }
 
 model RefreshToken {
@@ -347,11 +364,14 @@ model RefreshToken {
   updatedAt DateTime @updatedAt
 
   @@map("refresh_tokens")
+  @@schema("public")
 }
 
 enum ActivityType {
   Note
   Task
+
+  @@schema("public")
 }
 
 model Activity {
@@ -392,6 +412,7 @@ model Activity {
   updatedAt DateTime @updatedAt
 
   @@map("activities")
+  @@schema("public")
 }
 
 model Comment {
@@ -422,6 +443,7 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   @@map("comments")
+  @@schema("public")
 }
 
 model ActivityTarget {
@@ -449,6 +471,7 @@ model ActivityTarget {
   updatedAt DateTime @updatedAt
 
   @@map("activity_targets")
+  @@schema("public")
 }
 
 model Pipeline {
@@ -475,6 +498,7 @@ model Pipeline {
   updatedAt DateTime @updatedAt
 
   @@map("pipelines")
+  @@schema("public")
 }
 
 model PipelineStage {
@@ -510,11 +534,14 @@ model PipelineStage {
   updatedAt DateTime @updatedAt
 
   @@map("pipeline_stages")
+  @@schema("public")
 }
 
 enum PipelineProgressableType {
   Person
   Company
+
+  @@schema("public")
 }
 
 model PipelineProgress {
@@ -550,6 +577,7 @@ model PipelineProgress {
   person   Person? @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@map("pipeline_progresses")
+  @@schema("public")
 }
 
 enum AttachmentType {
@@ -560,6 +588,8 @@ enum AttachmentType {
   Spreadsheet
   Archive
   Other
+
+  @@schema("public")
 }
 
 model Attachment {
@@ -591,6 +621,7 @@ model Attachment {
   updatedAt DateTime  @updatedAt
 
   @@map("attachments")
+  @@schema("public")
 }
 
 model Favorite {
@@ -607,11 +638,14 @@ model Favorite {
   workspaceMemberId String?
 
   @@map("favorites")
+  @@schema("public")
 }
 
 enum ViewType {
   Table
   Pipeline
+
+  @@schema("public")
 }
 
 model View {
@@ -632,6 +666,7 @@ model View {
   workspaceId String
 
   @@map("views")
+  @@schema("public")
 }
 
 enum ViewFilterOperand {
@@ -641,6 +676,8 @@ enum ViewFilterOperand {
   LessThan
   Is
   IsNot
+
+  @@schema("public")
 }
 
 model ViewFilter {
@@ -660,11 +697,14 @@ model ViewFilter {
 
   @@id([viewId, key])
   @@map("viewFilters")
+  @@schema("public")
 }
 
 enum ViewSortDirection {
   asc
   desc
+
+  @@schema("public")
 }
 
 model ViewSort {
@@ -682,6 +722,7 @@ model ViewSort {
 
   @@id([viewId, key])
   @@map("viewSorts")
+  @@schema("public")
 }
 
 model ViewField {
@@ -702,4 +743,66 @@ model ViewField {
 
   @@id([viewId, key])
   @@map("viewFields")
+  @@schema("public")
+}
+
+// --------------------------------------
+// METADATA SCHEMA
+// --------------------------------------
+
+model DataSourceMetadata {
+  id          String  @id @default(uuid())
+  url         String?
+  schema      String?
+  type        String  @default("postgres")
+  displayName String?
+  isRemote    Boolean @default(false)
+
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id])
+  workspaceId     String
+  objectsMetadata ObjectMetadata[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("data_source_metadata")
+  @@schema("metadata")
+}
+
+model FieldMetadata {
+  id               String  @id @default(uuid())
+  type             String
+  displayName      String
+  targetColumnName String
+  isCustom         Boolean @default(false)
+
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  object      ObjectMetadata @relation(fields: [objectId], references: [id])
+  objectId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("field_metadata")
+  @@schema("metadata")
+}
+
+model ObjectMetadata {
+  id              String  @id @default(uuid())
+  displayName     String
+  targetTableName String
+  isCustom        Boolean @default(false)
+
+  workspace    Workspace          @relation(fields: [workspaceId], references: [id])
+  workspaceId  String
+  dataSource   DataSourceMetadata @relation(fields: [dataSourceId], references: [id])
+  dataSourceId String
+  fields       FieldMetadata[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("object_metadata")
+  @@schema("metadata")
 }

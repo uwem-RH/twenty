@@ -1,37 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
-
-import { DataSourceMetadata } from './data-source-metadata.entity';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class DataSourceMetadataService {
-  constructor(
-    @InjectRepository(DataSourceMetadata, 'metadata')
-    private readonly dataSourceMetadataRepository: Repository<DataSourceMetadata>,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async createDataSourceMetadata(workspaceId: string, workspaceSchema: string) {
     // TODO: Double check if this is the correct way to do this
-    const dataSource = await this.dataSourceMetadataRepository.findOne({
-      where: { workspaceId },
-    });
+    const dataSource =
+      await this.prismaService.client.dataSourceMetadata.findFirst({
+        where: { workspaceId },
+      });
 
     if (dataSource) {
       return dataSource;
     }
 
-    return this.dataSourceMetadataRepository.save({
-      workspaceId,
-      schema: workspaceSchema,
+    return this.prismaService.client.dataSourceMetadata.create({
+      data: {
+        workspaceId,
+        schema: workspaceSchema,
+      },
     });
   }
 
   getDataSourcesMetadataFromWorkspaceId(workspaceId: string) {
-    return this.dataSourceMetadataRepository.find({
+    return this.prismaService.client.dataSourceMetadata.findMany({
       where: { workspaceId },
-      order: { createdAt: 'DESC' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }

@@ -25,45 +25,37 @@ export class MigrationGeneratorService {
   public async executeMigrationFromPendingMigrations(
     workspaceId: string,
   ): Promise<TenantMigrationTableChange[]> {
-    const workspaceDataSource =
-      await this.dataSourceService.connectToWorkspaceDataSource(workspaceId);
-
-    if (!workspaceDataSource) {
-      throw new Error('Workspace data source not found');
-    }
-
-    const pendingMigrations =
-      await this.tenantMigrationService.getPendingMigrations(workspaceId);
-
-    const flattenedPendingMigrations: TenantMigrationTableChange[] =
-      pendingMigrations.reduce((acc, pendingMigration) => {
-        return [...acc, ...pendingMigration.migrations];
-      }, []);
-
-    const queryRunner = workspaceDataSource?.createQueryRunner();
-    const schemaName = this.dataSourceService.getSchemaName(workspaceId);
-
-    // Loop over each migration and create or update the table
-    // TODO: Should be done in a transaction
-    flattenedPendingMigrations.forEach(async (migration) => {
-      await this.handleTableChanges(queryRunner, schemaName, migration);
-    });
-
-    // Update appliedAt date for each migration
-    // TODO: Should be done after the migration is successful
-    pendingMigrations.forEach(async (pendingMigration) => {
-      await this.tenantMigrationService.setAppliedAtForMigration(
-        workspaceId,
-        pendingMigration,
-      );
-    });
-
-    await queryRunner.release();
-    // We want to destroy all connections to the workspace data source and invalidate the cache
-    // so that the next request will create a new connection and get the latest entities
-    await this.dataSourceService.disconnectFromWorkspaceDataSource(workspaceId);
-
-    return flattenedPendingMigrations;
+    // const workspaceDataSource =
+    //   await this.dataSourceService.connectToWorkspaceDataSource(workspaceId);
+    // if (!workspaceDataSource) {
+    //   throw new Error('Workspace data source not found');
+    // }
+    // const pendingMigrations =
+    //   await this.tenantMigrationService.getPendingMigrations(workspaceId);
+    // const flattenedPendingMigrations: TenantMigrationTableChange[] =
+    //   pendingMigrations.reduce((acc, pendingMigration) => {
+    //     return [...acc, ...pendingMigration.migrations];
+    //   }, []);
+    // const queryRunner = workspaceDataSource?.createQueryRunner();
+    // const schemaName = this.dataSourceService.getSchemaName(workspaceId);
+    // // Loop over each migration and create or update the table
+    // // TODO: Should be done in a transaction
+    // flattenedPendingMigrations.forEach(async (migration) => {
+    //   await this.handleTableChanges(queryRunner, schemaName, migration);
+    // });
+    // // Update appliedAt date for each migration
+    // // TODO: Should be done after the migration is successful
+    // pendingMigrations.forEach(async (pendingMigration) => {
+    //   await this.tenantMigrationService.setAppliedAtForMigration(
+    //     workspaceId,
+    //     pendingMigration,
+    //   );
+    // });
+    // await queryRunner.release();
+    // // We want to destroy all connections to the workspace data source and invalidate the cache
+    // // so that the next request will create a new connection and get the latest entities
+    // // await this.dataSourceService.disconnectFromWorkspaceDataSource(workspaceId);
+    // return flattenedPendingMigrations;
   }
 
   /**

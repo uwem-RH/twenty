@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { PrismaService } from 'src/database/prisma.service';
 
 import { ObjectMetadataService } from './object-metadata.service';
-import { ObjectMetadata } from './object-metadata.entity';
 
 describe('ObjectMetadataService', () => {
   let service: ObjectMetadataService;
@@ -12,7 +12,7 @@ describe('ObjectMetadataService', () => {
       providers: [
         ObjectMetadataService,
         {
-          provide: getRepositoryToken(ObjectMetadata, 'metadata'),
+          provide: PrismaService,
           useValue: {},
         },
       ],

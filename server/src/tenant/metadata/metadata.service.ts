@@ -26,12 +26,11 @@ export class MetadataService {
     type: string,
     workspaceId: string,
   ): Promise<string> {
-    const workspaceDataSource =
-      await this.dataSourceService.connectToWorkspaceDataSource(workspaceId);
+    await this.dataSourceService.connectToWorkspaceDataSource(workspaceId);
 
-    if (!workspaceDataSource) {
-      throw new Error('Workspace data source not found');
-    }
+    // if (!workspaceDataSource) {
+    //   throw new Error('Workspace data source not found');
+    // }
 
     const objectMetadata =
       await this.objectMetadataService.getObjectMetadataFromId(objectId);

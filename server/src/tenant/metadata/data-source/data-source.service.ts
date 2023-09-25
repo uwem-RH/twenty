@@ -1,36 +1,16 @@
-import {
-  Injectable,
-  NotFoundException,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { DataSource, QueryRunner, Table } from 'typeorm';
-
-import { EnvironmentService } from 'src/integrations/environment/environment.service';
 import { DataSourceMetadataService } from 'src/tenant/metadata/data-source-metadata/data-source-metadata.service';
-import { EntitySchemaGeneratorService } from 'src/tenant/metadata/entity-schema-generator/entity-schema-generator.service';
-import { TenantMigration } from 'src/tenant/metadata/tenant-migration/tenant-migration.entity';
+import { PrismaService } from 'src/database/prisma.service';
 
 import { uuidToBase36 } from './data-source.util';
 
 @Injectable()
-export class DataSourceService implements OnModuleInit, OnModuleDestroy {
-  private mainDataSource: DataSource;
-  private dataSources: Map<string, DataSource> = new Map();
-
+export class DataSourceService {
   constructor(
-    private readonly environmentService: EnvironmentService,
     private readonly dataSourceMetadataService: DataSourceMetadataService,
-    private readonly entitySchemaGeneratorService: EntitySchemaGeneratorService,
-  ) {
-    this.mainDataSource = new DataSource({
-      url: environmentService.getPGDatabaseUrl(),
-      type: 'postgres',
-      logging: false,
-      schema: 'public',
-    });
-  }
+    private readonly prismaService: PrismaService,
+  ) {}
 
   /**
    * Creates a new schema for a given workspaceId
@@ -39,17 +19,14 @@ export class DataSourceService implements OnModuleInit, OnModuleDestroy {
    */
   public async createWorkspaceSchema(workspaceId: string): Promise<string> {
     const schemaName = this.getSchemaName(workspaceId);
-
-    const queryRunner = this.mainDataSource.createQueryRunner();
-    const schemaAlreadyExists = await queryRunner.hasSchema(schemaName);
+    const schemaAlreadyExists = await this.prismaService.hasSchema(schemaName);
 
     if (schemaAlreadyExists) {
       return schemaName;
     }
 
-    await queryRunner.createSchema(schemaName, true);
-    await this.createMigrationTable(queryRunner, schemaName);
-    await queryRunner.release();
+    await this.prismaService.createSchema(schemaName);
+    await this.createMigrationTable(schemaName);
 
     await this.dataSourceMetadataService.createDataSourceMetadata(
       workspaceId,
@@ -59,53 +36,41 @@ export class DataSourceService implements OnModuleInit, OnModuleDestroy {
     return schemaName;
   }
 
-  private async createMigrationTable(
-    queryRunner: QueryRunner,
-    schemaName: string,
-  ) {
-    await queryRunner.createTable(
-      new Table({
-        name: 'tenant_migrations',
-        schema: schemaName,
-        columns: [
-          {
-            name: 'id',
-            type: 'uuid',
-            isPrimary: true,
-            default: 'uuid_generate_v4()',
-          },
-          {
-            name: 'migrations',
-            type: 'jsonb',
-          },
-          {
-            name: 'applied_at',
-            type: 'timestamp',
-            isNullable: true,
-          },
-          {
-            name: 'created_at',
-            type: 'timestamp',
-            default: 'now()',
-          },
-        ],
-      }),
-    );
+  private async createMigrationTable(schemaName: string) {
+    await this.prismaService.createTableFromDefinition({
+      name: 'tenant_migrations',
+      schema: schemaName,
+      ifNotExists: true,
+      columns: [
+        {
+          name: 'id',
+          type: 'uuid',
+          isPrimary: true,
+          default: 'uuid_generate_v4()',
+        },
+        {
+          name: 'migrations',
+          type: 'jsonb',
+        },
+        {
+          name: 'applied_at',
+          type: 'timestamp',
+          isNullable: true,
+        },
+        {
+          name: 'created_at',
+          type: 'timestamp',
+          default: 'now()',
+        },
+      ],
+    });
   }
 
   /**
    * Connects to a workspace data source using the workspace metadata. Returns a cached connection if it exists.
    * @param workspaceId
-   * @returns Promise<DataSource | undefined>
    */
-  public async connectToWorkspaceDataSource(
-    workspaceId: string,
-  ): Promise<DataSource | undefined> {
-    // if (this.dataSources.has(workspaceId)) {
-    //   const cachedDataSource = this.dataSources.get(workspaceId);
-    //   return cachedDataSource;
-    // }
-
+  public async connectToWorkspaceDataSource(workspaceId: string) {
     const dataSourcesMetadata =
       await this.dataSourceMetadataService.getDataSourcesMetadataFromWorkspaceId(
         workspaceId,
@@ -123,57 +88,13 @@ export class DataSourceService implements OnModuleInit, OnModuleDestroy {
     const schema = dataSourceMetadata.schema;
 
     // Probably not needed as we will ask for the schema name OR store public by default if it's remote
-    if (!schema && !dataSourceMetadata.isRemote) {
+    if (!schema || !dataSourceMetadata.isRemote) {
       throw Error(
         "No schema found for this non-remote data source, we don't want to fallback to public for workspace data sources.",
       );
     }
 
-    const entities =
-      await this.entitySchemaGeneratorService.getTypeORMEntitiesByDataSourceId(
-        dataSourceMetadata.id,
-      );
-
-    console.log('schema: ', schema);
-    const workspaceDataSource = new DataSource({
-      // TODO: We should use later dataSourceMetadata.type and use a switch case condition to create the right data source
-      url: dataSourceMetadata.url ?? this.environmentService.getPGDatabaseUrl(),
-      type: 'postgres',
-      logging: ['query'],
-      schema,
-      entities: {
-        TenantMigration,
-        ...entities,
-      },
-      synchronize: true,
-    });
-
-    await workspaceDataSource.initialize();
-
-    // Set search path to workspace schema for raw queries
-    await workspaceDataSource?.query(`SET search_path TO ${schema};`);
-
-    this.dataSources.set(workspaceId, workspaceDataSource);
-
-    return workspaceDataSource;
-  }
-
-  /**
-   * Disconnects from a workspace data source.
-   * @param workspaceId
-   * @returns Promise<void>
-   *
-   */
-  public async disconnectFromWorkspaceDataSource(workspaceId: string) {
-    if (!this.dataSources.has(workspaceId)) {
-      return;
-    }
-
-    const dataSource = this.dataSources.get(workspaceId);
-
-    await dataSource?.destroy();
-
-    this.dataSources.delete(workspaceId);
+    await this.prismaService.runOnSchema(schema);
   }
 
   /**
@@ -184,15 +105,5 @@ export class DataSourceService implements OnModuleInit, OnModuleDestroy {
    */
   public getSchemaName(workspaceId: string): string {
     return `workspace_${uuidToBase36(workspaceId)}`;
-  }
-
-  async onModuleInit() {
-    // Init main data source "default" schema
-    await this.mainDataSource.initialize();
-  }
-
-  async onModuleDestroy() {
-    // Destroy main data source "default" schema
-    await this.mainDataSource.destroy();
   }
 }

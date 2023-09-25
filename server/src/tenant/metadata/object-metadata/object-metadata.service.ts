@@ -1,28 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
-
-import { ObjectMetadata } from './object-metadata.entity';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class ObjectMetadataService {
-  constructor(
-    @InjectRepository(ObjectMetadata, 'metadata')
-    private readonly fieldMetadataRepository: Repository<ObjectMetadata>,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   public async getObjectMetadataFromDataSourceId(dataSourceId: string) {
-    return this.fieldMetadataRepository.find({
+    return this.prismaService.client.objectMetadata.findFirst({
       where: { dataSourceId },
-      relations: ['fields'],
+      include: {
+        fields: true,
+      },
     });
   }
 
   public async getObjectMetadataFromId(objectMetadataId: string) {
-    return this.fieldMetadataRepository.findOne({
+    return this.prismaService.client.objectMetadata.findFirst({
       where: { id: objectMetadataId },
-      relations: ['fields'],
+      include: {
+        fields: true,
+      },
     });
   }
 }
