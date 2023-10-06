@@ -2,14 +2,14 @@ const path = require('path');
 
 computeStoriesGlob = () => {
   if (process.env.STORYBOOK_STORIES_FOLDER === 'pages') {
-    return ['../src/pages/**/*.stories.@(js|jsx|ts|tsx)', '../src/__stories__/*.stories.@(js|jsx|ts|tsx)']
+    return ['../src/pages/**/*.stories.@(js|jsx|ts|tsx)', '../src/__stories__/*.stories.@(js|jsx|ts|tsx)', '../src/pages/**/__stories__/*.mdx']
   }
 
   if (process.env.STORYBOOK_STORIES_FOLDER === 'modules') {
-    return ['../src/modules/**/*.stories.@(js|jsx|ts|tsx)']
+    return ['../src/modules/**/*.stories.@(js|jsx|ts|tsx)', '../src/modules/**/__stories__/*.mdx']
   }
 
-  return ['../src/**/*.stories.@(js|jsx|ts|tsx)']
+  return ['../src/**/*.stories.@(js|jsx|ts|tsx)', '../src/**/__stories__/*.mdx']
 };
 
 module.exports = {
