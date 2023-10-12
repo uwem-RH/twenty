@@ -19,7 +19,7 @@ import {
   ReadFavoriteAbilityHandler,
 } from 'src/ability/handlers/favorite.ability-handler';
 import { AuthWorkspace } from 'src/decorators/auth-workspace.decorator';
-import { FavoriteService } from 'src/core/favorite/services/favorite.service';
+import { FavoriteService } from 'src/meta/favorite/services/favorite.service';
 import { FavoriteWhereInput } from 'src/core/@generated/favorite/favorite-where.input';
 
 @InputType()

@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { MetadataModule } from 'src/metadata/metadata.module';
 import { DataSourceMetadataModule } from 'src/metadata/data-source-metadata/data-source-metadata.module';
 import { ObjectMetadataModule } from 'src/metadata/object-metadata/object-metadata.module';
+import { MetaModule } from 'src/meta/meta.module';
 
 import { TenantService } from './tenant.service';
 
@@ -14,6 +15,7 @@ import { SchemaBuilderModule } from './schema-builder/schema-builder.module';
     SchemaBuilderModule,
     DataSourceMetadataModule,
     ObjectMetadataModule,
+    MetaModule,
   ],
   providers: [TenantService],
   exports: [TenantService],
