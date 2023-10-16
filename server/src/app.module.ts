@@ -1,13 +1,15 @@
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { Inject, Module, OnModuleInit } from '@nestjs/common';
+import { GraphQLModule, GraphQLSchemaHost } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, ModuleRef } from '@nestjs/core';
+import { APP_FILTER, HttpAdapterHost, ModuleRef } from '@nestjs/core';
 
 import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
 import GraphQLJSON from 'graphql-type-json';
 import { GraphQLError, GraphQLSchema } from 'graphql';
 import { ExtractJwt } from 'passport-jwt';
 import { TokenExpiredError, JsonWebTokenError, verify } from 'jsonwebtoken';
+import { useSofa } from 'sofa-api';
+import { Application } from 'express';
 
 import { AppService } from './app.service';
 
@@ -112,10 +114,28 @@ import { ExceptionFilter } from './filters/exception.filter';
     },
   ],
 })
-export class AppModule {
+export class AppModule implements OnModuleInit {
   static moduleRef: ModuleRef;
 
-  constructor(private moduleRef: ModuleRef) {
+  constructor(
+    private moduleRef: ModuleRef,
+    @Inject(GraphQLSchemaHost) private readonly schemaHost: GraphQLSchemaHost,
+    @Inject(HttpAdapterHost) private readonly httpAdapterHost: HttpAdapterHost,
+  ) {
     AppModule.moduleRef = this.moduleRef;
+  }
+
+  onModuleInit(): void {
+    const { httpAdapter } = this.httpAdapterHost;
+    const app: Application = httpAdapter.getInstance();
+    const { schema } = this.schemaHost;
+
+    app.use(
+      '/api',
+      useSofa({
+        basePath: '/api',
+        schema,
+      }),
+    );
   }
 }
