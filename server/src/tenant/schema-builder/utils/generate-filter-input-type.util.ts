@@ -5,8 +5,6 @@ import { pascalCase } from 'src/utils/pascal-case';
 import { UUIDFilterType } from 'src/tenant/schema-builder/graphql-types/input/uuid-filter.type';
 import { DatetimeFilterType } from 'src/tenant/schema-builder/graphql-types/input/date-time-filter.type';
 
-import { mapColumnTypeToFilterType } from './map-column-type-to-filter-type.util';
-
 const defaultFields = {
   id: { type: UUIDFilterType },
   createdAt: { type: DatetimeFilterType },
@@ -28,7 +26,7 @@ export const generateFilterInputType = (
     fields: () => ({
       ...defaultFields,
       ...columns.reduce((fields, column) => {
-        const graphqlType = mapColumnTypeToFilterType(column);
+        const graphqlType = column.type.toGraphQLInputObjectType();
 
         fields[column.name] = {
           type: graphqlType,

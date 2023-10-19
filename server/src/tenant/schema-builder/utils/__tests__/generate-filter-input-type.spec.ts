@@ -1,8 +1,8 @@
 import { GraphQLList, GraphQLNonNull, GraphQLInputObjectType } from 'graphql';
 
+import { convertTypeToFieldMetadataType } from 'src/metadata/field-metadata-types/field-metadata-type.util';
 import { FieldMetadata } from 'src/metadata/field-metadata/field-metadata.entity';
 import { generateFilterInputType } from 'src/tenant/schema-builder/utils/generate-filter-input-type.util';
-import { mapColumnTypeToFilterType } from 'src/tenant/schema-builder/utils/map-column-type-to-filter-type.util';
 
 describe('generateFilterInputType', () => {
   it('handles empty columns array', () => {
@@ -20,15 +20,15 @@ describe('generateFilterInputType', () => {
 
   it('handles various column types', () => {
     const columns = [
-      { name: 'stringField', type: 'text' },
-      { name: 'intField', type: 'number' },
-      { name: 'booleanField', type: 'boolean' },
+      { name: 'stringField', type: convertTypeToFieldMetadataType('text') },
+      { name: 'intField', type: convertTypeToFieldMetadataType('number') },
+      { name: 'booleanField', type: convertTypeToFieldMetadataType('boolean') },
     ] as FieldMetadata[];
 
     const FilterInputType = generateFilterInputType('MultiTypeTest', columns);
 
     columns.forEach((column) => {
-      const expectedType = mapColumnTypeToFilterType(column);
+      const expectedType = column.type.toGraphQLInputObjectType();
 
       expect(FilterInputType.getFields()[column.name].type).toBe(expectedType);
     });

@@ -9,10 +9,6 @@ import { Repository } from 'typeorm';
 import { TypeOrmQueryService } from '@ptc-org/nestjs-query-typeorm';
 
 import { FieldMetadata } from 'src/metadata/field-metadata/field-metadata.entity';
-import {
-  convertFieldMetadataToColumnActions,
-  generateTargetColumnMap,
-} from 'src/metadata/field-metadata/utils/field-metadata.util';
 import { MigrationRunnerService } from 'src/metadata/migration-runner/migration-runner.service';
 import { TenantMigrationService } from 'src/metadata/tenant-migration/tenant-migration.service';
 import { ObjectMetadataService } from 'src/metadata/object-metadata/services/object-metadata.service';
@@ -56,7 +52,7 @@ export class FieldMetadataService extends TypeOrmQueryService<FieldMetadata> {
 
     const createdFieldMetadata = await super.createOne({
       ...record,
-      targetColumnMap: generateTargetColumnMap(record.type),
+      targetColumnMap: record.type.toTargetColumnMap(),
     });
 
     await this.tenantMigrationService.createCustomMigration(
@@ -65,7 +61,9 @@ export class FieldMetadataService extends TypeOrmQueryService<FieldMetadata> {
         {
           name: objectMetadata.targetTableName,
           action: 'alter',
-          columns: convertFieldMetadataToColumnActions(createdFieldMetadata),
+          columns: createdFieldMetadata.type.toTenantMigrationColumnActions(
+            createdFieldMetadata.targetColumnMap,
+          ),
         } satisfies TenantMigrationTableAction,
       ],
     );

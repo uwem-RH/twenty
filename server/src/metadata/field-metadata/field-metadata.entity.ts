@@ -19,6 +19,8 @@ import {
 } from '@ptc-org/nestjs-query-graphql';
 
 import { ObjectMetadata } from 'src/metadata/object-metadata/object-metadata.entity';
+import { FieldMetadataType } from 'src/metadata/field-metadata-types/field-metadata-type';
+import { convertTypeToFieldMetadataType } from 'src/metadata/field-metadata-types/field-metadata-type.util';
 
 import { BeforeCreateOneField } from './hooks/before-create-one-field.hook';
 
@@ -49,8 +51,15 @@ export class FieldMetadata {
   objectId: string;
 
   @Field()
-  @Column({ nullable: false })
-  type: string;
+  @Column({
+    nullable: false,
+    type: 'text',
+    transformer: {
+      from: (value: string) => convertTypeToFieldMetadataType(value),
+      to: (value: FieldMetadataType) => value.toString(),
+    },
+  })
+  type: FieldMetadataType;
 
   @Field()
   @Column({ nullable: false })
