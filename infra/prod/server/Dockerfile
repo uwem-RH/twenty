@@ -1,4 +1,4 @@
-FROM twentycrm/twenty-server
+FROM --platform=linux/amd64 twentycrm/twenty-server
 
 WORKDIR /app/server
 
