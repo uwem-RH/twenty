@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 twentycrm/twenty-front
+FROM twentycrm/twenty-front
 
 WORKDIR /app/front
 
