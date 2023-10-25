@@ -1,0 +1,77 @@
+{
+  "nameSingular": "personV2",
+  "namePlural": "peopleV2",
+  "labelSingular": "Person",
+  "labelPlural": "People",
+  "targetTableName": "people",
+  "description": "A person",
+  "icon": "people",
+  "fields": [
+    {
+      "type": "email",
+      "name": "email",
+      "label": "Email",
+      "targetColumnMap": {
+        "value": "email"
+      },
+      "description": "Email address of the person",
+      "icon": "email",
+      "isNullable": true
+    },
+    {
+      "type": "phone",
+      "name": "phone",
+      "label": "Phone",
+      "targetColumnMap": {
+        "value": "phone"
+      },
+      "description": "Phone number of the person",
+      "icon": "phone",
+      "isNullable": true
+    },
+    {
+      "type": "text",
+      "name": "city",
+      "label": "City",
+      "targetColumnMap": {
+        "value": "city"
+      },
+      "description": "City where the person lives",
+      "icon": "location",
+      "isNullable": true
+    },
+    {
+      "type": "text",
+      "name": "firstName",
+      "label": "First name",
+      "targetColumnMap": {
+        "value": "firstName"
+      },
+      "description": "First name of the person",
+      "icon": null,
+      "isNullable": true
+    },
+    {
+      "type": "text",
+      "name": "lastName",
+      "label": "Last name",
+      "targetColumnMap": {
+        "value": "lastName"
+      },
+      "description": "Last name of the person",
+      "icon": null,
+      "isNullable": true
+    },
+    {
+      "type": "relation",
+      "name": "company",
+      "label": "Company",
+      "targetColumnMap": {
+        "value": null
+      },
+      "description": "Company the person works for",
+      "icon": "business",
+      "isNullable": true
+    }
+  ]
+}

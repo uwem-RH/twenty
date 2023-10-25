@@ -50,6 +50,17 @@
       "description": "Number of employees",
       "icon": "people",
       "isNullable": true
+    },
+    {
+      "type": "relation",
+      "name": "people",
+      "label": "People",
+      "targetColumnMap": {
+        "value": null
+      },
+      "description": "People who work at the company",
+      "icon": "people",
+      "isNullable": true
     }
   ]
 }
