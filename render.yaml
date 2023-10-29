@@ -29,11 +29,11 @@ services:
     - key: REFRESH_TOKEN_SECRET
       generateValue: true
     - key: FLEXIBLE_BACKEND_ENABLED
-      generateValue: true
+      value: true
     - key: IS_DATA_MODEL_SETTINGS_ENABLED
-      generateValue: true
+      value: true
     - key: IS_DEVELOPERS_SETTINGS_ENABLED
-      generateValue: true
+      value: true
     - key: PG_DATABASE_HOST
       fromService:
         name: twenty_postgres
