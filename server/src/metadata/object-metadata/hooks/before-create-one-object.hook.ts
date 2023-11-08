@@ -29,7 +29,7 @@ export class BeforeCreateOneObject<T extends ObjectMetadata>
         workspaceId,
       );
 
-    instance.input.dataSourceId = lastDataSourceMetadata.id;
+    instance.input.dataSourceMetadataId = lastDataSourceMetadata.id;
     instance.input.targetTableName = instance.input.namePlural;
     instance.input.workspaceId = workspaceId;
     instance.input.isActive = true;
