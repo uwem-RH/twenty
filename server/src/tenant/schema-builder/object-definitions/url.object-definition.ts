@@ -16,6 +16,7 @@ export const urlObjectDefinition = {
       name: 'text',
       label: 'Text',
       targetColumnMap: { value: 'text' },
+      isNullable: true,
     },
     {
       id: 'link',
@@ -23,6 +24,7 @@ export const urlObjectDefinition = {
       name: 'link',
       label: 'Link',
       targetColumnMap: { value: 'link' },
+      isNullable: true,
     },
   ],
 } as ObjectMetadataInterface;
