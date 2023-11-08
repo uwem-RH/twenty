@@ -24,6 +24,14 @@ type Story = StoryObj<typeof SettingsObjectFieldPreview>;
 
 export const Text: Story = {};
 
+export const Currency: Story = {
+  args: {
+    fieldIconKey: 'IconCurrencyDollar',
+    fieldLabel: 'Amount',
+    fieldType: 'MONEY',
+  },
+};
+
 export const Number: Story = {
   args: {
     fieldIconKey: 'IconUsers',

@@ -64,7 +64,7 @@ export const SettingsObjectFieldTypeSelectSection = ({
         }),
       )}
     />
-    {['NUMBER', 'TEXT'].includes(fieldType) && (
+    {['MONEY', 'NUMBER', 'TEXT'].includes(fieldType) && (
       <StyledSettingsObjectFieldTypeCard
         preview={
           <SettingsObjectFieldPreview
