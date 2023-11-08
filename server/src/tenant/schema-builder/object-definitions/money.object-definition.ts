@@ -13,6 +13,7 @@ export const moneyObjectDefinition = {
     {
       id: 'amount',
       type: FieldMetadataType.NUMBER,
+      objectId: FieldMetadataType.MONEY.toString(),
       name: 'amount',
       label: 'Amount',
       targetColumnMap: { value: 'amount' },
@@ -20,9 +21,12 @@ export const moneyObjectDefinition = {
     {
       id: 'currency',
       type: FieldMetadataType.TEXT,
+      objectId: FieldMetadataType.MONEY.toString(),
       name: 'currency',
       label: 'Currency',
       targetColumnMap: { value: 'currency' },
     },
   ],
+  fromRelations: [],
+  toRelations: [],
 } as ObjectMetadataInterface;
